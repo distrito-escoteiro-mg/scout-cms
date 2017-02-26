@@ -6,7 +6,7 @@
           h4.title Agrupar Lançamentos
           div.table-responsive
             confirm-modal(:visible="showConfirmDeleteModal" @close="closeConfirmDeleteModal" v-bind:data="confirmDeleteData" v-on:confirm="deleteReportGroup")
-            UpdateReportGroupModal-modal(:visible="showUpdateReportGroup" @close="closeUpdateReportGroup" v-bind:data="updateReportGroupData" v-on:confirm="reportGroupUpdated")
+            update-report-group-modal(:visible="showUpdateReportGroup" @close="closeUpdateReportGroup" v-bind:data="updateReportGroupData" v-on:confirm="reportGroupUpdated")
             table.table.is-narrow
               thead
                 tr

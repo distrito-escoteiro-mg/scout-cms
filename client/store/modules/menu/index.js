@@ -2,6 +2,7 @@ import * as types from '../../mutation-types'
 // import lazyLoading from './lazyLoading'
 import users from './users'
 import news from './news'
+import transparency from './transparency'
 
 // show: meta.label -> name
 // name: component name
@@ -10,7 +11,8 @@ import news from './news'
 const state = {
   items: [
     news,
-    users
+    users,
+    transparency
   ]
 }
 

@@ -5,11 +5,11 @@
       form(v-on:submit.prevent="updateReportGroup()" v-if="data && data.reportGroup")
         label.label Nome
         p.control
-          input.input(type="text" placeholder="Distrito 2017" v-model="newReportGroup.name")
+          input.input(type="text" placeholder="Distrito 2017" v-model="data.reportGroup.name")
         label.label Estado
-          select(id="active")
-            option Ativo
-            option Inativo
+          select(v-model="data.reportGroup.active")
+            option(value='true') Ativo
+            option(value='false') Inativo
         div.control.is-grouped.submit-group
           p.control
             button.button.is-success(type="submit") Salvar
@@ -18,8 +18,8 @@
 </template>
 
 <script>
-  import { Modal } from 'vue-bulma-modal'
   import repGrpService from '../../../../services/transparency/reportGroups'
+  import { Modal } from 'vue-bulma-modal'
 
   export default {
     components: {
@@ -30,16 +30,12 @@
       visible: Boolean,
       data: Object
     },
-    data () {
-      return {
-      }
-    },
     methods: {
       close () {
         this.$emit('close', false)
       },
       updateReportGroup () {
-        console.log('t2')
+        console.log(this.data.reportGroup)
         const formattedData = {
           name: this.data.reportGroup.name,
           active: this.data.reportGroup.active

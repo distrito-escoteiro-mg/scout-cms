@@ -37,9 +37,9 @@
               p.control
                 input.input(type="text" placeholder="Distrito 2017" v-model="newReportGroup.name")
               label.label Estado
-                select(id="active")
-                  option Ativo
-                  option Inativo
+                select(v-model="newReportGroup.active")
+                  option(value='true') Ativo
+                  option(value='false') Inativo
               p.control.submit-button
                 button.button.is-medium.is-primary(type="submit" v-bind:disabled="errors.any()") Cadastrar
 </template>
@@ -87,6 +87,7 @@
     },
     methods: {
       openUpdateReportGroupModal (reportGroup, index) {
+        console.log('t11')
         this.updateReportGroupData = {
           reportGroup,
           index
@@ -105,6 +106,7 @@
         this.reportGroups[reference.index] = reference.reportGroup
       },
       openConfirmDeleteModal (reportGroup, index) {
+        console.log('t11')
         this.confirmDeleteData = {
           reference: {
             id: reportGroup._id,

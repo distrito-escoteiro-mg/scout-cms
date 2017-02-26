@@ -4,8 +4,9 @@
       h4.title Atualizar Dados
       form(v-on:submit.prevent="updateReport()" v-if="data && data.report")
         label.label Tipo
-        p.control
-          input.input(type="text" placeholder="Despesa" v-model="newReport.type")
+          select(id="active")
+            option Despesa
+            option Receita
         label.label Descrição
         p.control
           input.input(type="text" placeholder="Reembolso" v-model="newReport.short_description")

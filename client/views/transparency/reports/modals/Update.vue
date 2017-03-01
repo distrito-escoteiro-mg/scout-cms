@@ -3,19 +3,30 @@
     div.box
       h4.title Atualizar Dados
       form(v-on:submit.prevent="updateReport()" v-if="data && data.report")
+        label.label Origem
+          select(v-model="data.report.report_group.name" )
         label.label Tipo
-          select(id="active")
-            option Despesa
-            option Receita
-        label.label Descrição
+        select(v-model="data.report.type")
+          option Despesa
+          option Receita
+        label.label Descrição Curta
         p.control
-          input.input(type="text" placeholder="Reembolso" v-model="newReport.short_description")
-        label.label Valor
+          input.input(type="text" placeholder="Reembolso"
+          v-model="data.report.short_description")
+        label.label Descrição Completa (Opcional)
         p.control
-          input.input(type="number" placeholder="15,75" v-model="newReport.value")
+          input.input(type="text" placeholder="Reembolso para o chefe josé da compra de frutas para a atividade" v-model="data.report.complete_description")
         label.label Data
         p.control
-          input.input(type="date" placeholder="30/11/2017" v-model="newReport.date")
+          input.input(type="date" placeholder="30/11/2017" v-model="data.report.date")
+        label.label Fornecedor
+        p.control
+          input.input(type="text" placeholder="Supermercados EPA"
+          v-model="data.report.provider")
+        label.label Valor
+        p.control
+          input.input(type="number" placeholder="15,75"
+          v-model.number="data.report.value" step="0.01")
         div.control.is-grouped.submit-group
           p.control
             button.button.is-success(type="submit") Salvar
@@ -51,8 +62,11 @@
         const formattedData = {
           type: this.data.report.type,
           short_description: this.data.report.short_description,
-          value: this.data.report.value,
-          date: this.data.report.date
+          date: this.data.report.date,
+          report_group: this.data.report.report_group,
+          complete_description: this.data.report.complete_description,
+          provider: this.data.report.provider,
+          value: this.data.report.value
         }
         repService.updateReport(this.data.report._id, formattedData)
         .then((response) => {

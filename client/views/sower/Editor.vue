@@ -56,6 +56,15 @@
         span {{request.gifted.group.number}} - {{request.gifted.group.name}}
 
       br
+      h5.subtitle.is-5 Parecer da Solicitação
+      small.help Coloque aqui uma mensagem de resposta ao solicitante
+      br
+      p.control
+        label.label Parecer
+        textarea.textarea(v-model="request.reply" v-validate="'min:10|max:500'" v-bind:class="{'is-danger': errors.has('reply') }" name="reply")
+        span.help.is-danger(v-show="errors.has('reply')") {{ errors.first('reply') }}
+
+      br
       h5.subtitle.is-5 Atualizar Status
       label.label Status
       p.control
@@ -111,45 +120,13 @@
     },
     methods: {
       statusFormated (request) {
-        if (!request || !request.status) return false
-        switch (request.status) {
-          case 'waiting':
-            return 'Aguardando'
-          case 'analyzing':
-            return 'Analisando'
-          case 'issued':
-            return 'Emitido'
-          case 'rejected':
-            return 'Indeferido'
-          case 'approved':
-            return 'Deferido'
-        }
+        return rewardsService.statusFormated(request)
       },
       typeFormated (request) {
-        if (!request || !request.status) return false
-        switch (request.type) {
-          case 'badge':
-            return 'Distintivo Especial'
-          case 'reward':
-            return 'Condecoração'
-          case 'sower':
-            return 'Distintivo de Semeador'
-        }
+        return rewardsService.typeFormated(request)
       },
       getStatusMessage (request) {
-        if (!request || !request.status) return false
-        switch (request.status) {
-          case 'waiting':
-            return 'A solicitação foi recebida e está aguardando análise.'
-          case 'analyzing':
-            return 'A Região Escoteira está analisando a sua solicitação.'
-          case 'issued':
-            return 'A solicitação foi aprovada e a sua recompensa já foi emitida.'
-          case 'rejected':
-            return 'A solicitação foi negada.'
-          case 'approved':
-            return 'A solicitação foi aprovada e aguarda emissão.'
-        }
+        return rewardsService.getStatusMessage(request)
       },
       submitForm () {
         this.$validator.validateAll().then(success => {
@@ -158,7 +135,7 @@
         })
       },
       editRequest () {
-        rewardsService.update(this.request._id, {status: this.request.status})
+        rewardsService.update(this.request._id, {status: this.request.status, reply: this.request.reply})
         .then(response => {
           openNotification({
             message: 'Solicitação atualizada com sucesso!',

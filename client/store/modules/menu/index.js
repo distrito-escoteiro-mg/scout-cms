@@ -2,10 +2,13 @@ import * as types from '../../mutation-types'
 // import lazyLoading from './lazyLoading'
 import users from './users'
 import news from './news'
-import transparency from './transparency'
+import events from './events'
 import rewards from './rewards'
 import sower from './sower'
+import level from './level'
+import book from './book'
 import badges from './badges'
+import documents from './documents'
 
 // show: meta.label -> name
 // name: component name
@@ -14,11 +17,14 @@ import badges from './badges'
 const state = {
   items: [
     news,
+    events,
+    documents,
     rewards,
     badges,
     sower,
-    users,
-    transparency
+    level,
+    book,
+    users
   ]
 }
 

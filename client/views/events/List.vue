@@ -1,7 +1,7 @@
 <template lang="pug">
   div.box
     h3.title
-      | Solicitações de Recompensas
+      | Eventos
     form.search-container(v-on:submit.prevent="applySearch()")
       p.control.has-addons
         input.input(type="search" placeholder="Pesquisar" v-model="filter")
@@ -9,47 +9,60 @@
           span.icon
             i.fa.fa-search
     div.table-responsive
-      confirm-modal(:visible="showConfirmDeleteModal" @close="closeConfirmDeleteModal" v-bind:data="confirmDeleteData" v-on:confirm="deleteRequest")
+      confirm-modal(:visible="showConfirmDeleteModal" @close="closeConfirmDeleteModal" v-bind:data="confirmDeleteData" v-on:confirm="deleteNews")
       table.table.is-narrow
         thead
           tr
-            th ID
-            th Tipo
-            th Recompensa
-            th Agraciado(a)
-            th Status
+            //- th ID
+            th Slug
+            th Título
+            th Organização
+            th Seção
+            th Data Inicio
+            th Último Editor
             th Atualizado
             th Criado
             th
             th
         tbody
-          tr(v-for="(request, index) in requests")
-            td {{request._id}}
-            td {{typeFormated(request)}}
-            td {{request.reward}}
-            td {{request.gifted.name}}
-            td {{statusFormated(request)}}
-            td {{request.updated_at | moment("L LT")}}
-            td {{request.created_at | moment("L LT")}}
+          tr(v-for="(event, index) in events")
+            td
+              span(v-if="event.slug") {{event.slug}}
+            td
+              span(v-if="event.title") {{event.title}}
+            td
+              span(v-if="event.hosts") {{event.hosts.join(', ')}}
+            td
+              span(v-if="event.section") {{event.section.join(', ')}}
+            td
+              span(v-if="event.start_date") {{event.start_date | moment('DD/MM/YYYY')}}
+            td
+              span(v-if="event.last_updated_by") {{event.last_updated_by.name}}
+            td
+              span(v-if="event.updated_at") {{event.updated_at | moment("L LT")}}
+            td
+              span(v-if="event.created_at") {{event.created_at | moment("L LT")}}
             td.is-icon
-              router-link(:to="{name: 'Atualizar Solicitação de Recompensa', params: {id: request._id}}")
+              router-link(:to="{name: 'Editar Evento', params: {id: event._id}}")
                 i.fa.fa-pencil
             td.is-icon
-              a(@click="openConfirmDeleteModal(request, index)")
+              a(@click="openConfirmDeleteModal(event, index)")
                 i.fa.fa-trash
     div.pagination-container
       pagination(modifiers="is-centered" v-bind:currentPage="currentPage" v-bind:lastPage="totalPages" v-bind:routeName="routeName")
+    p.add-button
+      router-link(:to="{name: 'Criar Evento'}")
+        button.button.is-medium-.is-primary Adicionar Evento
 </template>
 
 <script>
   import Vue from 'vue'
+  import eventsService from '../../services/events'
   import Notification from 'vue-bulma-notification'
   import ConfirmModal from '../../components/modals/Confirm'
-  import rewardsService from '../../services/rewards'
   import Pagination from '../../components/pagination/Pagination'
 
   const ITEMS_PER_PAGE = 15
-  const PAGE_TYPE = 'reward'
 
   const NotificationComponent = Vue.extend(Notification)
   const openNotification = (propsData = {
@@ -78,54 +91,49 @@
         limit: 4,
         totalPages: 1,
         routeName: this.$route.name,
+        events: [],
+        date: new Date(),
+
         showConfirmDeleteModal: false,
-        confirmDeleteData: {},
-        requests: [],
-        date: new Date()
+        confirmDeleteData: {}
       }
     },
     methods: {
-      openConfirmDeleteModal (request, index) {
+      openConfirmDeleteModal (events, index) {
         this.confirmDeleteData = {
           reference: {
-            id: request._id,
+            id: events._id,
             index: index
           },
           title: 'Confirmar Operação',
-          content: `Você tem certeza que deseja excluir a solicitação "${request.reward} para ${request.gifted.name}" ? Essa operação não pode ser cancelada.`
+          content: `Você tem certeza que deseja excluir a notícia ${events.title} ? Essa operação não pode ser cancelada.`
         }
         this.showConfirmDeleteModal = true
       },
       closeConfirmDeleteModal () {
         this.showConfirmDeleteModal = false
       },
-      deleteRequest (reference) {
-        rewardsService.delete(reference.id)
+      deleteNews (reference) {
+        eventsService.delete(reference.id)
         .then((response) => {
           openNotification({
-            message: 'Solicitação excluída com sucesso!',
+            message: 'Notícia excluída com sucesso!',
             type: 'success',
             duration: 3000
           })
-          this.requests.splice(reference.index, 1)
+          this.events.splice(reference.index, 1)
         }, (response) => {
           openNotification({
-            message: 'Erro ao excluir a solicitação!',
+            message: 'Erro ao excluir a notícia!',
             type: 'danger',
             duration: 3000
           })
         })
       },
-      statusFormated (request) {
-        return rewardsService.statusFormated(request)
-      },
-      typeFormated (request) {
-        return rewardsService.typeFormated(request)
-      },
       applySearch () {
         this.page = 1
-        rewardsService.query({page: this.page, limit: ITEMS_PER_PAGE, filter: this.filter, type: PAGE_TYPE}).then((response) => {
-          this.requests = response.body.requests
+        eventsService.query({page: this.page, limit: ITEMS_PER_PAGE, filter: this.filter}).then((response) => {
+          this.events = response.body.events
           this.currentPage = response.body.meta.currentPage
           this.limit = response.body.meta.limit
           this.totalPages = response.body.meta.totalPages
@@ -137,8 +145,9 @@
       const page = this.$route.query.page || 1
       const filter = this.$route.query.filter || ''
 
-      rewardsService.query({page: page, limit: ITEMS_PER_PAGE, filter: filter, type: PAGE_TYPE}).then((response) => {
-        vm.requests = response.body.requests
+      eventsService.query({page: page, limit: ITEMS_PER_PAGE, filter: filter}).then((response) => {
+        console.log(response.body)
+        vm.events = response.body.events
         vm.currentPage = response.body.meta.currentPage
         vm.limit = response.body.meta.limit
         vm.totalPages = response.body.meta.totalPages
@@ -148,8 +157,8 @@
     watch: {
       '$route' (to, from) {
         const page = to.query.page
-        rewardsService.query({page: page, limit: ITEMS_PER_PAGE, filter: this.filter, type: PAGE_TYPE}).then((response) => {
-          this.requests = response.body.requests
+        eventsService.query({page: page, limit: ITEMS_PER_PAGE, filter: this.filter}).then((response) => {
+          this.news = response.body.news
           this.currentPage = response.body.meta.currentPage
           this.limit = response.body.meta.limit
           this.totalPages = response.body.meta.totalPages
@@ -168,8 +177,6 @@
       width: 50%
       input
         width: 100%
-  .pagination-container
-    padding: 2rem
   .table-responsive
     display: block
     width: 100%

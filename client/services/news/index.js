@@ -10,6 +10,9 @@ export default {
       return app.$http.get(API_URL + 'news')
     }
   },
+  query (params) {
+    return app.$http.get(API_URL + 'news', {params: params})
+  },
   create (data) {
     return app.$http.post(API_URL + 'news', data)
   },
@@ -18,5 +21,8 @@ export default {
   },
   update (id, data) {
     return app.$http.patch(API_URL + `news/${id}`, data)
+  },
+  rescrape (id, data) {
+    return app.$http.patch(API_URL + `news/${id}/rescrape`, data)
   }
 }

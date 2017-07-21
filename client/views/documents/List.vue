@@ -1,7 +1,7 @@
 <template lang="pug">
   div.box
     h3.title
-      | Solicitações de Recompensas
+      | Documentos
     form.search-container(v-on:submit.prevent="applySearch()")
       p.control.has-addons
         input.input(type="search" placeholder="Pesquisar" v-model="filter")
@@ -13,43 +13,49 @@
       table.table.is-narrow
         thead
           tr
-            th ID
+            th Título
             th Tipo
-            th Recompensa
-            th Agraciado(a)
-            th Status
+            th Arquivo
+            th Último Editor
             th Atualizado
             th Criado
             th
             th
         tbody
-          tr(v-for="(request, index) in requests")
-            td {{request._id}}
-            td {{typeFormated(request)}}
-            td {{request.reward}}
-            td {{request.gifted.name}}
-            td {{statusFormated(request)}}
-            td {{request.updated_at | moment("L LT")}}
-            td {{request.created_at | moment("L LT")}}
+          tr(v-for="(document, index) in documents")
+            td
+              span(v-if="document.title") {{document.title}}
+            td
+              span(v-if="document.type") {{typeFormated(document)}}
+            td
+              span(v-if="document.file") {{document.file}}
+            td
+              span(v-if="document.last_updated_by") {{document.last_updated_by.name}}
+            td
+              span(v-if="document.updated_at") {{document.updated_at | moment("L LT")}}
+            td
+              span(v-if="document.created_at") {{document.created_at | moment("L LT")}}
             td.is-icon
-              router-link(:to="{name: 'Atualizar Solicitação de Recompensa', params: {id: request._id}}")
+              router-link(:to="{name: 'Atualizar Documento', params: {id: document._id}}")
                 i.fa.fa-pencil
             td.is-icon
-              a(@click="openConfirmDeleteModal(request, index)")
+              a(@click="openConfirmDeleteModal(document, index)")
                 i.fa.fa-trash
     div.pagination-container
       pagination(modifiers="is-centered" v-bind:currentPage="currentPage" v-bind:lastPage="totalPages" v-bind:routeName="routeName")
+    p.add-button
+      router-link(:to="{name: 'Criar Documento'}")
+        button.button.is-medium-.is-primary Criar Documento
 </template>
 
 <script>
   import Vue from 'vue'
   import Notification from 'vue-bulma-notification'
   import ConfirmModal from '../../components/modals/Confirm'
-  import rewardsService from '../../services/rewards'
+  import documentsService from '../../services/documents'
   import Pagination from '../../components/pagination/Pagination'
 
   const ITEMS_PER_PAGE = 15
-  const PAGE_TYPE = 'reward'
 
   const NotificationComponent = Vue.extend(Notification)
   const openNotification = (propsData = {
@@ -80,19 +86,19 @@
         routeName: this.$route.name,
         showConfirmDeleteModal: false,
         confirmDeleteData: {},
-        requests: [],
+        documents: [],
         date: new Date()
       }
     },
     methods: {
-      openConfirmDeleteModal (request, index) {
+      openConfirmDeleteModal (document, index) {
         this.confirmDeleteData = {
           reference: {
-            id: request._id,
+            id: document._id,
             index: index
           },
           title: 'Confirmar Operação',
-          content: `Você tem certeza que deseja excluir a solicitação "${request.reward} para ${request.gifted.name}" ? Essa operação não pode ser cancelada.`
+          content: `Você tem certeza que deseja excluir o documento "${document.title}" ? Essa operação não pode ser cancelada.`
         }
         this.showConfirmDeleteModal = true
       },
@@ -100,32 +106,29 @@
         this.showConfirmDeleteModal = false
       },
       deleteRequest (reference) {
-        rewardsService.delete(reference.id)
+        documentsService.delete(reference.id)
         .then((response) => {
           openNotification({
-            message: 'Solicitação excluída com sucesso!',
+            message: 'Documento excluído com sucesso!',
             type: 'success',
             duration: 3000
           })
-          this.requests.splice(reference.index, 1)
+          this.documents.splice(reference.index, 1)
         }, (response) => {
           openNotification({
-            message: 'Erro ao excluir a solicitação!',
+            message: 'Erro ao excluir o documento!',
             type: 'danger',
             duration: 3000
           })
         })
       },
-      statusFormated (request) {
-        return rewardsService.statusFormated(request)
-      },
-      typeFormated (request) {
-        return rewardsService.typeFormated(request)
+      typeFormated (document) {
+        return documentsService.typeFormated(document)
       },
       applySearch () {
         this.page = 1
-        rewardsService.query({page: this.page, limit: ITEMS_PER_PAGE, filter: this.filter, type: PAGE_TYPE}).then((response) => {
-          this.requests = response.body.requests
+        documentsService.query({page: this.page, limit: ITEMS_PER_PAGE, filter: this.filter}).then((response) => {
+          this.documents = response.body.documents
           this.currentPage = response.body.meta.currentPage
           this.limit = response.body.meta.limit
           this.totalPages = response.body.meta.totalPages
@@ -137,8 +140,8 @@
       const page = this.$route.query.page || 1
       const filter = this.$route.query.filter || ''
 
-      rewardsService.query({page: page, limit: ITEMS_PER_PAGE, filter: filter, type: PAGE_TYPE}).then((response) => {
-        vm.requests = response.body.requests
+      documentsService.query({page: page, limit: ITEMS_PER_PAGE, filter: filter}).then((response) => {
+        vm.documents = response.body.documents
         vm.currentPage = response.body.meta.currentPage
         vm.limit = response.body.meta.limit
         vm.totalPages = response.body.meta.totalPages
@@ -148,8 +151,8 @@
     watch: {
       '$route' (to, from) {
         const page = to.query.page
-        rewardsService.query({page: page, limit: ITEMS_PER_PAGE, filter: this.filter, type: PAGE_TYPE}).then((response) => {
-          this.requests = response.body.requests
+        documentsService.query({page: page, limit: ITEMS_PER_PAGE, filter: this.filter}).then((response) => {
+          this.documents = response.body.documents
           this.currentPage = response.body.meta.currentPage
           this.limit = response.body.meta.limit
           this.totalPages = response.body.meta.totalPages
@@ -168,8 +171,6 @@
       width: 50%
       input
         width: 100%
-  .pagination-container
-    padding: 2rem
   .table-responsive
     display: block
     width: 100%
